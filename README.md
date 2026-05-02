@@ -8,7 +8,7 @@ Mental health matters. Whether you're a student juggling exams, a professional d
 
 ## ✨ Features
 
-____ 1. **Daily Mood Tracker**____
+## 1. **Daily Mood Tracker**
 - Log your mood on a simple 1-5 scale using emoji-based selection
 - Track mood patterns over time with visual insights
 - See trends to understand what affects your mental state
