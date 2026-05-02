@@ -1,6 +1,6 @@
-# 🌟 Mental Health Check-in Tool
+# 🌟 Mental Health Check-up Tool
 
-A simple yet meaningful application designed to help anyone (students, professionals, or anyone struggling) prioritize their mental well-being through daily mood tracking, journaling, and encouraging messages.
+A simple (vibe coded website)yet meaningful application designed to help anyone (students, professionals, or anyone struggling) prioritize their mental well-being through daily mood tracking, journaling, and encouraging messages.
 
 ## 🎯 Purpose
 
@@ -8,7 +8,7 @@ Mental health matters. Whether you're a student juggling exams, a professional d
 
 ## ✨ Features
 
-### 1. **Daily Mood Tracker**
+____ 1. **Daily Mood Tracker**____
 - Log your mood on a simple 1-5 scale using emoji-based selection
 - Track mood patterns over time with visual insights
 - See trends to understand what affects your mental state
