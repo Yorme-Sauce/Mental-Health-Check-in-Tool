@@ -1,140 +1,169 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mental Health Check-in Tool</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mental Health Check-in</title>
+  <meta name="description" content="A private, simple tool to check in with your mental health, save quick notes, and view trends. Data is stored locally in your browser." />
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="preload" href="style.css" as="style" />
+  <link rel="stylesheet" href="style.css" />
+  <!-- Consider adding Open Graph tags if sharing -->
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🌟 Mental Health Check-in</h1>
-            <p class="subtitle">A safe space to check in with yourself</p>
-        </header>
+  <div class="container">
+    <header>
+      <h1>🌟 Mental Health Check-in</h1>
+      <p class="subtitle">A safe space to check in with yourself</p>
+    </header>
 
-        <!-- Navigation -->
-        <nav class="nav-tabs">
-            <button class="tab-btn active" data-tab="mood">Today's Check-in</button>
-            <button class="tab-btn" data-tab="journal">Journal</button>
-            <button class="tab-btn" data-tab="history">History</button>
-            <button class="tab-btn" data-tab="tips">Self-Care Tips</button>
-        </nav>
+    <!-- Navigation (ARIA tabs) -->
+    <nav class="nav-tabs" role="tablist" aria-label="Main tabs">
+      <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="mood" id="tab-mood" data-tab="mood">Today's Check-in</button>
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="journal" id="tab-journal" data-tab="journal">Journal</button>
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="history" id="tab-history" data-tab="history">History</button>
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tips" id="tab-tips" data-tab="tips">Self-Care Tips</button>
+    </nav>
 
-        <!-- Tab 1: Mood Check-in -->
-        <section id="mood" class="tab-content active">
-            <div class="mood-section">
-                <h2>How are you feeling today?</h2>
-                <p class="description">Take a moment to check in with yourself</p>
-                
-                <div class="mood-selector">
-                    <button class="mood-btn" data-mood="1" data-emoji="😢">
-                        <span class="emoji">😢</span>
-                        <span>Terrible</span>
-                    </button>
-                    <button class="mood-btn" data-mood="2" data-emoji="😟">
-                        <span class="emoji">😟</span>
-                        <span>Bad</span>
-                    </button>
-                    <button class="mood-btn" data-mood="3" data-emoji="😐">
-                        <span class="emoji">😐</span>
-                        <span>Okay</span>
-                    </button>
-                    <button class="mood-btn" data-mood="4" data-emoji="🙂">
-                        <span class="emoji">🙂</span>
-                        <span>Good</span>
-                    </button>
-                    <button class="mood-btn" data-mood="5" data-emoji="😄">
-                        <span class="emoji">😄</span>
-                        <span>Great</span>
-                    </button>
-                </div>
+    <main>
+      <!-- Tab 1: Mood Check-in -->
+      <section id="mood" class="tab-content active" role="tabpanel" aria-labelledby="tab-mood">
+        <div class="mood-section">
+          <h2>How are you feeling today?</h2>
+          <p class="description">Take a moment to check in with yourself</p>
 
-                <div id="encouragement" class="encouragement hidden">
-                    <h3>💌 A message for you:</h3>
-                    <p id="message-text"></p>
-                </div>
+          <!-- Use a form and accessible radio inputs for mood -->
+          <form id="mood-form" aria-describedby="mood-help">
+            <p id="mood-help" class="sr-only">Choose one option and optionally add notes before saving.</p>
 
-                <div class="mood-notes">
-                    <label for="mood-notes">Quick notes (optional):</label>
-                    <textarea id="mood-notes" placeholder="What's on your mind? (Optional)"></textarea>
-                    <button id="save-mood-btn" class="btn-primary">Save Check-in</button>
-                </div>
+            <fieldset class="mood-selector" aria-required="true">
+              <legend class="sr-only">Mood options</legend>
+
+              <label class="mood-label">
+                <input type="radio" name="mood" value="1" class="mood-input" />
+                <span class="emoji" aria-hidden="true">😢</span>
+                <span class="mood-text">Terrible</span>
+              </label>
+
+              <label class="mood-label">
+                <input type="radio" name="mood" value="2" class="mood-input" />
+                <span class="emoji" aria-hidden="true">😟</span>
+                <span class="mood-text">Bad</span>
+              </label>
+
+              <label class="mood-label">
+                <input type="radio" name="mood" value="3" class="mood-input" />
+                <span class="emoji" aria-hidden="true">😐</span>
+                <span class="mood-text">Okay</span>
+              </label>
+
+              <label class="mood-label">
+                <input type="radio" name="mood" value="4" class="mood-input" />
+                <span class="emoji" aria-hidden="true">🙂</span>
+                <span class="mood-text">Good</span>
+              </label>
+
+              <label class="mood-label">
+                <input type="radio" name="mood" value="5" class="mood-input" />
+                <span class="emoji" aria-hidden="true">😄</span>
+                <span class="mood-text">Great</span>
+              </label>
+            </fieldset>
+
+            <div id="encouragement" class="encouragement hidden" aria-live="polite" aria-atomic="true">
+              <h3>💌 A message for you:</h3>
+              <p id="message-text"></p>
             </div>
-        </section>
 
-        <!-- Tab 2: Journaling -->
-        <section id="journal" class="tab-content">
-            <div class="journal-section">
-                <h2>Your Journal</h2>
-                <p class="description">A judgment-free space to express yourself</p>
-
-                <div class="journal-prompt">
-                    <p id="prompt-text"></p>
-                    <button id="new-prompt-btn" class="btn-secondary">New Prompt</button>
-                </div>
-
-                <textarea id="journal-entry" placeholder="Write freely here... There's no right or wrong way to express yourself."></textarea>
-                
-                <div class="journal-actions">
-                    <button id="save-journal-btn" class="btn-primary">Save Entry</button>
-                    <button id="clear-journal-btn" class="btn-secondary">Clear</button>
-                </div>
-
-                <div id="journal-saved" class="notification hidden">
-                    ✨ Journal entry saved! Keep going!
-                </div>
+            <div class="mood-notes">
+              <label for="mood-notes">Quick notes (optional):</label>
+              <textarea id="mood-notes" name="notes" placeholder="What's on your mind? (Optional)"></textarea>
+              <div class="mood-actions">
+                <button id="save-mood-btn" type="submit" class="btn-primary">Save Check-in</button>
+              </div>
             </div>
-        </section>
+          </form>
+        </div>
+      </section>
 
-        <!-- Tab 3: History & Analytics -->
-        <section id="history" class="tab-content">
-            <div class="history-section">
-                <h2>Your Progress</h2>
-                <p class="description">See your mood trends over time</p>
+      <!-- Tab 2: Journaling -->
+      <section id="journal" class="tab-content" role="tabpanel" aria-labelledby="tab-journal" hidden>
+        <div class="journal-section">
+          <h2>Your Journal</h2>
+          <p class="description">A judgment-free space to express yourself</p>
 
-                <div class="stats">
-                    <div class="stat-card">
-                        <h3>Today's Mood</h3>
-                        <p id="today-mood" class="stat-value">—</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>This Week Avg</h3>
-                        <p id="week-avg" class="stat-value">—</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Check-ins</h3>
-                        <p id="total-checkins" class="stat-value">0</p>
-                    </div>
-                </div>
+          <div class="journal-prompt">
+            <p id="prompt-text"></p>
+            <button id="new-prompt-btn" class="btn-secondary" type="button">New Prompt</button>
+          </div>
 
-                <div class="history-list">
-                    <h3>Recent Check-ins</h3>
-                    <div id="history-entries"></div>
-                </div>
+          <textarea id="journal-entry" aria-label="Journal entry" placeholder="Write freely here... There's no right or wrong way to express yourself."></textarea>
 
-                <button id="clear-data-btn" class="btn-danger">Clear All Data</button>
+          <div class="journal-actions">
+            <button id="save-journal-btn" class="btn-primary" type="button">Save Entry</button>
+            <button id="clear-journal-btn" class="btn-secondary" type="button">Clear</button>
+          </div>
+
+          <div id="journal-saved" class="notification hidden" role="status" aria-live="polite">
+            ✨ Journal entry saved! Keep going!
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab 3: History & Analytics -->
+      <section id="history" class="tab-content" role="tabpanel" aria-labelledby="tab-history" hidden>
+        <div class="history-section">
+          <h2>Your Progress</h2>
+          <p class="description">See your mood trends over time</p>
+
+          <div class="stats">
+            <div class="stat-card">
+              <h3>Today's Mood</h3>
+              <p id="today-mood" class="stat-value">—</p>
             </div>
-        </section>
-
-        <!-- Tab 4: Self-Care Tips -->
-        <section id="tips" class="tab-content">
-            <div class="tips-section">
-                <h2>Self-Care Tips</h2>
-                <p class="description">Quick things you can do right now</p>
-
-                <div id="tips-container" class="tips-grid">
-                    <!-- Tips will be populated by JS -->
-                </div>
+            <div class="stat-card">
+              <h3>This Week Avg</h3>
+              <p id="week-avg" class="stat-value">—</p>
             </div>
-        </section>
-    </div>
+            <div class="stat-card">
+              <h3>Check-ins</h3>
+              <p id="total-checkins" class="stat-value">0</p>
+            </div>
+          </div>
 
-    <footer>
-        <p>💚 Remember: Your mental health matters. You're not alone.</p>
-        <p class="crisis-note">In crisis? Contact <strong>988 Suicide & Crisis Lifeline</strong> (US) or seek local help</p>
-    </footer>
+          <div class="history-list">
+            <h3>Recent Check-ins</h3>
+            <div id="history-entries" aria-live="polite"></div>
+          </div>
 
-    <script src="script.js"></script>
+          <div class="danger-actions">
+            <button id="export-data-btn" class="btn-secondary" type="button">Export Data</button>
+            <button id="clear-data-btn" class="btn-danger" type="button" data-confirm>Clear All Data</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab 4: Self-Care Tips -->
+      <section id="tips" class="tab-content" role="tabpanel" aria-labelledby="tab-tips" hidden>
+        <div class="tips-section">
+          <h2>Self-Care Tips</h2>
+          <p class="description">Quick things you can do right now</p>
+          <div id="tips-container" class="tips-grid" aria-live="polite"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <footer>
+    <p>💚 Remember: Your mental health matters. You're not alone.</p>
+    <p class="crisis-note">In crisis? Contact <strong>988 Suicide & Crisis Lifeline</strong> (US) or seek local help.</p>
+    <p class="privacy-note">Data saved here stays on your device (localStorage). You can export or clear it at any time.</p>
+  </footer>
+
+  <noscript>
+    <div class="noscript-warning">This app relies on JavaScript for saving and navigation. Please enable JavaScript for full functionality.</div>
+  </noscript>
+
+  <script src="script.js" defer></script>
 </body>
 </html>

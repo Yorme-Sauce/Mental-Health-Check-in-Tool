@@ -1,0 +1,58 @@
+/* Basic layout and utilities */
+:root{
+  --bg:#fbfbff;
+  --card:#ffffff;
+  --muted:#6b7280;
+  --accent:#2563eb;
+  --danger:#dc2626;
+}
+html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial; background:var(--bg);color:#111827}
+.container{max-width:900px;margin:24px auto;padding:20px}
+header h1{margin:0 0 6px;font-size:1.6rem}
+.subtitle{margin:0;color:var(--muted)}
+
+/* Tabs */
+.nav-tabs{display:flex;gap:8px;margin:16px 0}
+.tab-btn{background:transparent;border:1px solid transparent;padding:8px 12px;border-radius:8px;cursor:pointer}
+.tab-btn.active{background:var(--card);box-shadow:0 1px 2px rgba(0,0,0,0.04);border-color:#e6e7eb}
+.tab-btn:focus{outline:3px solid rgba(37,99,235,0.25);outline-offset:2px}
+
+/* Mood selector */
+.mood-selector{display:flex;gap:8px;flex-wrap:wrap;border:0;padding:0;margin:8px 0}
+.mood-label{display:flex;align-items:center;gap:8px;padding:10px;border-radius:8px;background:var(--card);border:1px solid #eef2ff;cursor:pointer}
+.mood-label .emoji{font-size:1.4rem}
+.mood-input{position:relative;left:-9999px;opacity:0;height:0;width:0}
+.mood-input:checked + .emoji + .mood-text{font-weight:600}
+
+/* Buttons */
+.btn-primary{background:var(--accent);color:white;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
+.btn-secondary{background:transparent;border:1px solid #e6e7eb;padding:8px 12px;border-radius:8px;cursor:pointer}
+.btn-danger{background:var(--danger);color:white;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
+
+/* Stats and history */
+.stats{display:flex;gap:12px;margin:12px 0}
+.stat-card{background:var(--card);padding:12px;border-radius:8px;flex:1;border:1px solid #f1f5f9}
+.stat-value{font-size:1.2rem;margin:6px 0 0}
+.history-entry{display:flex;gap:12px;align-items:flex-start;background:var(--card);padding:8px;border-radius:6px;margin-bottom:8px;border:1px solid #f1f5f9}
+.history-entry-date{color:var(--muted);min-width:96px}
+.history-entry-notes{color:#111827}
+
+/* Tips */
+.tips-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.tip-card{background:var(--card);padding:12px;border-radius:8px;border:1px solid #f1f5f9}
+
+/* Helpers */
+.hidden{display:none}
+.notification{background:#f0f9ff;padding:8px;border-radius:6px;margin-top:8px}
+.noscript-warning{background:#fff4e5;padding:12px;border-radius:6px;border:1px solid #fde68a}
+
+/* Accessibility helpers */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* Focus styles for interactive elements */
+button:focus, a:focus, input:focus, textarea:focus{outline:3px solid rgba(37,99,235,0.25);outline-offset:2px}
+
+@media (max-width:520px){
+  .container{margin:12px;padding:16px}
+  .nav-tabs{overflow:auto}
+}
