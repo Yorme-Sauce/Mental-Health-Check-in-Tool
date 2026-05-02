@@ -41,6 +41,11 @@ header h1{margin:0 0 6px;font-size:1.6rem}
 .tips-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
 .tip-card{background:var(--card);padding:12px;border-radius:8px;border:1px solid #f1f5f9}
 
+/* Modal */
+.modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.4);z-index:60}
+.modal-content{background:var(--card);padding:18px;border-radius:10px;max-width:480px;width:90%;box-shadow:0 10px 30px rgba(2,6,23,0.15);border:1px solid #e6eef8}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+
 /* Helpers */
 .hidden{display:none}
 .notification{background:#f0f9ff;padding:8px;border-radius:6px;margin-top:8px}

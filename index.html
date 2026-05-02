@@ -164,6 +164,18 @@
     <div class="noscript-warning">This app relies on JavaScript for saving and navigation. Please enable JavaScript for full functionality.</div>
   </noscript>
 
+  <!-- Accessible modal for alerts & confirmations -->
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-desc">
+    <div class="modal-content" role="document">
+      <h2 id="modal-title">Title</h2>
+      <p id="modal-desc">Message</p>
+      <div class="modal-actions">
+        <button id="modal-cancel" class="btn-secondary">Cancel</button>
+        <button id="modal-confirm" class="btn-primary">OK</button>
+      </div>
+    </div>
+  </div>
+
   <script src="script.js" defer></script>
 </body>
 </html>
