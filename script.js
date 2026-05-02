@@ -4,17 +4,32 @@ let appData = {
     journalEntries: []
 };
 
-// Load data from localStorage
+// Load data from localStorage (safe parse)
 function loadData() {
-    const saved = localStorage.getItem('mentalHealthData');
-    if (saved) {
-        appData = JSON.parse(saved);
+    try {
+        const saved = localStorage.getItem('mentalHealthData');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            if (parsed && typeof parsed === 'object') {
+                appData = {
+                    entries: Array.isArray(parsed.entries) ? parsed.entries : [],
+                    journalEntries: Array.isArray(parsed.journalEntries) ? parsed.journalEntries : []
+                };
+            }
+        }
+    } catch (err) {
+        console.error('Failed to load saved data:', err);
+        appData = { entries: [], journalEntries: [] };
     }
 }
 
 // Save data to localStorage
 function saveData() {
-    localStorage.setItem('mentalHealthData', JSON.stringify(appData));
+    try {
+        localStorage.setItem('mentalHealthData', JSON.stringify(appData));
+    } catch (err) {
+        console.error('Failed to save data:', err);
+    }
 }
 
 // Encouraging messages based on mood
@@ -87,55 +102,24 @@ const journalPrompts = [
 
 // Self-care tips
 const selfCareTips = [
-    {
-        title: "Take a Break",
-        description: "Step away from your screen. Even 5 minutes in nature or solitude can reset your mind."
-    },
-    {
-        title: "Hydrate",
-        description: "Drink a glass of water. Sometimes dehydration directly affects mood and energy."
-    },
-    {
-        title: "Breathe Deeply",
-        description: "Try 4-7-8 breathing: Inhale for 4, hold for 7, exhale for 8. Repeat 4 times."
-    },
-    {
-        title: "Move Your Body",
-        description: "A short walk, stretch, dance, or yoga can release endorphins and lift your mood."
-    },
-    {
-        title: "Connect with Someone",
-        description: "Reach out to a friend, family, or loved one. A simple 'how are you?' can change everything."
-    },
-    {
-        title: "Practice Gratitude",
-        description: "Write down 3 things you're grateful for, no matter how small. Shifts perspective."
-    },
-    {
-        title: "Meditate or Mindfulness",
-        description: "Even 2 minutes of mindfulness can calm your mind. Try an app if you need guidance."
-    },
-    {
-        title: "Play Music",
-        description: "Listen to something that lifts your spirits. Sing if you feel like it!"
-    },
-    {
-        title: "Create Something",
-        description: "Draw, write, paint, or build. No talent required. Expression is healing."
-    },
-    {
-        title: "Spend Time in Nature",
-        description: "Fresh air and sunlight boost mood naturally. Even 10 minutes helps."
-    },
-    {
-        title: "Practice Self-Compassion",
-        description: "Talk to yourself like you'd talk to a good friend. You deserve kindness."
-    },
-    {
-        title: "Do Something You Love",
-        description: "Whether it's reading, gaming, cooking—do what brings you joy."
-    }
+    { title: "Take a Break", description: "Step away from your screen. Even 5 minutes in nature or solitude can reset your mind." },
+    { title: "Hydrate", description: "Drink a glass of water. Sometimes dehydration directly affects mood and energy." },
+    { title: "Breathe Deeply", description: "Try 4-7-8 breathing: Inhale for 4, hold for 7, exhale for 8. Repeat 4 times." },
+    { title: "Move Your Body", description: "A short walk, stretch, dance, or yoga can release endorphins and lift your mood." },
+    { title: "Connect with Someone", description: "Reach out to a friend, family, or loved one. A simple 'how are you?' can change everything." },
+    { title: "Practice Gratitude", description: "Write down 3 things you're grateful for, no matter how small. Shifts perspective." },
+    { title: "Meditate or Mindfulness", description: "Even 2 minutes of mindfulness can calm your mind. Try an app if you need guidance." },
+    { title: "Play Music", description: "Listen to something that lifts your spirits. Sing if you feel like it!" },
+    { title: "Create Something", description: "Draw, write, paint, or build. No talent required. Expression is healing." },
+    { title: "Spend Time in Nature", description: "Fresh air and sunlight boost mood naturally. Even 10 minutes helps." },
+    { title: "Practice Self-Compassion", description: "Talk to yourself like you'd talk to a good friend. You deserve kindness." },
+    { title: "Do Something You Love", description: "Whether it's reading, gaming, cooking—do what brings you joy." }
 ];
+
+// Utilities
+function todayIsoDate() {
+    return new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+}
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', function() {
@@ -148,156 +132,188 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Setup event listeners
 function setupEventListeners() {
-    // Tab switching
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const tabName = this.getAttribute('data-tab');
-            switchTab(tabName);
+    // Tabs: click and keyboard
+    const tabButtons = Array.from(document.querySelectorAll('.tab-btn'));
+    tabButtons.forEach((btn, idx) => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.tab, btn));
+        btn.addEventListener('keydown', (e) => {
+            const key = e.key;
+            let newIndex = idx;
+            if (key === 'ArrowRight' || key === 'ArrowDown') newIndex = (idx + 1) % tabButtons.length;
+            else if (key === 'ArrowLeft' || key === 'ArrowUp') newIndex = (idx - 1 + tabButtons.length) % tabButtons.length;
+            else if (key === 'Home') newIndex = 0;
+            else if (key === 'End') newIndex = tabButtons.length - 1;
+            else return;
+
+            e.preventDefault();
+            const targetBtn = tabButtons[newIndex];
+            targetBtn.focus();
+            switchTab(targetBtn.dataset.tab, targetBtn);
         });
     });
 
-    // Mood selection
-    document.querySelectorAll('.mood-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            selectMood(this);
+    // Mood radios change -> show encouragement
+    document.querySelectorAll('.mood-input').forEach(input => {
+        input.addEventListener('change', (e) => {
+            const value = e.target.value;
+            showEncouragement(value);
         });
     });
 
-    // Save mood check-in
-    document.getElementById('save-mood-btn').addEventListener('click', saveMoodCheckIn);
+    // Mood form submit
+    const moodForm = document.getElementById('mood-form');
+    if (moodForm) {
+        moodForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            saveMoodCheckIn();
+        });
+    }
 
     // Journal
-    document.getElementById('new-prompt-btn').addEventListener('click', displayRandomPrompt);
-    document.getElementById('save-journal-btn').addEventListener('click', saveJournalEntry);
-    document.getElementById('clear-journal-btn').addEventListener('click', () => {
-        document.getElementById('journal-entry').value = '';
+    const newPromptBtn = document.getElementById('new-prompt-btn');
+    if (newPromptBtn) newPromptBtn.addEventListener('click', displayRandomPrompt);
+    const saveJournalBtn = document.getElementById('save-journal-btn');
+    if (saveJournalBtn) saveJournalBtn.addEventListener('click', saveJournalEntry);
+    const clearJournalBtn = document.getElementById('clear-journal-btn');
+    if (clearJournalBtn) clearJournalBtn.addEventListener('click', () => {
+        const je = document.getElementById('journal-entry');
+        if (je) je.value = '';
     });
 
-    // Clear data
-    document.getElementById('clear-data-btn').addEventListener('click', clearAllData);
+    // Export & Clear data
+    const exportBtn = document.getElementById('export-data-btn');
+    if (exportBtn) exportBtn.addEventListener('click', exportData);
+    const clearBtn = document.getElementById('clear-data-btn');
+    if (clearBtn) clearBtn.addEventListener('click', clearAllData);
 }
 
-// Tab switching
-function switchTab(tabName) {
-    // Hide all tabs
-    document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.classList.remove('active');
+// Tab switching (manages ARIA and hidden)
+function switchTab(tabName, buttonElement) {
+    const panels = document.querySelectorAll('.tab-content');
+    const tabButtons = document.querySelectorAll('.tab-btn');
+
+    tabButtons.forEach(btn => {
+        const selected = btn.dataset.tab === tabName;
+        btn.classList.toggle('active', selected);
+        btn.setAttribute('aria-selected', selected ? 'true' : 'false');
+        if (selected) btn.focus();
     });
 
-    // Deactivate all buttons
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active');
+    panels.forEach(panel => {
+        const isTarget = panel.id === tabName;
+        panel.classList.toggle('active', isTarget);
+        if (isTarget) panel.removeAttribute('hidden'); else panel.setAttribute('hidden', '');
     });
 
-    // Show selected tab
-    document.getElementById(tabName).classList.add('active');
-    event.target.classList.add('active');
-
-    // Update history when viewing history tab
-    if (tabName === 'history') {
-        updateHistory();
-    }
-}
-
-// Mood selection
-function selectMood(element) {
-    // Remove previous selection
-    document.querySelectorAll('.mood-btn').forEach(btn => {
-        btn.classList.remove('selected');
-    });
-
-    // Select current
-    element.classList.add('selected');
-
-    // Show encouragement
-    const mood = element.getAttribute('data-mood');
-    showEncouragement(mood);
+    if (tabName === 'history') updateHistory();
 }
 
 // Show encouragement message
 function showEncouragement(mood) {
     const messages = encouragements[mood];
+    if (!messages || messages.length === 0) return;
     const randomMessage = messages[Math.floor(Math.random() * messages.length)];
-    
-    document.getElementById('message-text').textContent = randomMessage;
-    document.getElementById('encouragement').classList.remove('hidden');
+
+    const messageEl = document.getElementById('message-text');
+    if (messageEl) messageEl.textContent = randomMessage;
+    const container = document.getElementById('encouragement');
+    if (container) container.classList.remove('hidden');
 }
 
 // Save mood check-in
 function saveMoodCheckIn() {
-    const selectedBtn = document.querySelector('.mood-btn.selected');
-    if (!selectedBtn) {
+    const selectedInput = document.querySelector('input[name="mood"]:checked');
+    const notesEl = document.getElementById('mood-notes');
+    if (!selectedInput) {
+        // Accessible alert
         alert('Please select a mood first!');
         return;
     }
 
-    const mood = selectedBtn.getAttribute('data-mood');
-    const emoji = selectedBtn.getAttribute('data-emoji');
-    const notes = document.getElementById('mood-notes').value;
-    const today = new Date().toLocaleDateString();
+    const mood = parseInt(selectedInput.value, 10);
+    // Find emoji from the label's .emoji
+    let emoji = '';
+    const label = selectedInput.closest('label');
+    if (label) {
+        const emojiEl = label.querySelector('.emoji');
+        if (emojiEl) emoji = emojiEl.textContent.trim();
+    }
+
+    const notes = notesEl ? notesEl.value : '';
+    const timestamp = Date.now();
+    const date = todayIsoDate();
 
     appData.entries.push({
-        date: today,
-        mood: parseInt(mood),
-        emoji: emoji,
-        notes: notes,
-        timestamp: new Date().getTime()
+        date,
+        mood,
+        emoji,
+        notes,
+        timestamp
     });
 
     saveData();
+
+    // Confirmation
     alert('✨ Check-in saved! Great job prioritizing your mental health!');
-    
+
     // Reset form
-    document.querySelectorAll('.mood-btn').forEach(btn => btn.classList.remove('selected'));
-    document.getElementById('mood-notes').value = '';
-    document.getElementById('encouragement').classList.add('hidden');
+    if (notesEl) notesEl.value = '';
+    const encouragement = document.getElementById('encouragement');
+    if (encouragement) encouragement.classList.add('hidden');
+    // uncheck radios
+    document.querySelectorAll('input[name="mood"]').forEach(i => i.checked = false);
+
+    updateHistory();
 }
 
 // Journal prompt
 function displayRandomPrompt() {
     const prompt = journalPrompts[Math.floor(Math.random() * journalPrompts.length)];
-    document.getElementById('prompt-text').textContent = `💭 ${prompt}`;
+    const pt = document.getElementById('prompt-text');
+    if (pt) pt.textContent = `💭 ${prompt}`;
 }
 
 // Save journal entry
 function saveJournalEntry() {
-    const entry = document.getElementById('journal-entry').value;
-    
-    if (!entry.trim()) {
+    const entryEl = document.getElementById('journal-entry');
+    if (!entryEl) return;
+    const entry = entryEl.value.trim();
+    if (!entry) {
         alert('Please write something first!');
         return;
     }
 
-    const today = new Date().toLocaleDateString();
-    
-    appData.journalEntries.push({
-        date: today,
-        content: entry,
-        timestamp: new Date().getTime()
-    });
+    const timestamp = Date.now();
+    const date = todayIsoDate();
 
+    appData.journalEntries.push({ date, content: entry, timestamp });
     saveData();
-    
-    // Show confirmation
-    const notification = document.getElementById('journal-saved');
-    notification.classList.remove('hidden');
-    setTimeout(() => notification.classList.add('hidden'), 3000);
 
-    document.getElementById('journal-entry').value = '';
+    // Show confirmation (aria-live handled in HTML)
+    const notification = document.getElementById('journal-saved');
+    if (notification) {
+        notification.classList.remove('hidden');
+        setTimeout(() => notification.classList.add('hidden'), 3000);
+    }
+
+    entryEl.value = '';
 }
 
-// Populate tips
+// Populate tips (avoid innerHTML)
 function populateTips() {
     const container = document.getElementById('tips-container');
-    container.innerHTML = '';
+    if (!container) return;
+    container.textContent = '';
 
     selfCareTips.forEach(tip => {
         const card = document.createElement('div');
         card.className = 'tip-card';
-        card.innerHTML = `
-            <h4>${tip.title}</h4>
-            <p>${tip.description}</p>
-        `;
+        const h4 = document.createElement('h4');
+        h4.textContent = tip.title;
+        const p = document.createElement('p');
+        p.textContent = tip.description;
+        card.appendChild(h4);
+        card.appendChild(p);
         container.appendChild(card);
     });
 }
@@ -305,28 +321,35 @@ function populateTips() {
 // Update history display
 function updateHistory() {
     // Today's mood
-    const today = new Date().toLocaleDateString();
-    const todayEntry = appData.entries.find(e => e.date === today);
-    document.getElementById('today-mood').textContent = todayEntry ? todayEntry.emoji : '—';
+    const today = todayIsoDate();
+    const todayEntry = appData.entries.slice().reverse().find(e => e.date === today);
+    const todayMoodEl = document.getElementById('today-mood');
+    if (todayMoodEl) todayMoodEl.textContent = todayEntry ? todayEntry.emoji : '—';
 
-    // Weekly average
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    const weekEntries = appData.entries.filter(e => new Date(e.date) >= oneWeekAgo);
-    const weekAvg = weekEntries.length > 0 
-        ? (weekEntries.reduce((sum, e) => sum + e.mood, 0) / weekEntries.length).toFixed(1)
+    // Weekly average (last 7 days by timestamp)
+    const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const weekEntries = appData.entries.filter(e => e.timestamp && e.timestamp >= oneWeekAgo);
+    const weekAvg = weekEntries.length > 0
+        ? (weekEntries.reduce((sum, e) => sum + (e.mood || 0), 0) / weekEntries.length).toFixed(1)
         : '—';
-    document.getElementById('week-avg').textContent = weekAvg;
+    const weekAvgEl = document.getElementById('week-avg');
+    if (weekAvgEl) weekAvgEl.textContent = weekAvg;
 
     // Total check-ins
-    document.getElementById('total-checkins').textContent = appData.entries.length;
+    const totalEl = document.getElementById('total-checkins');
+    if (totalEl) totalEl.textContent = String(appData.entries.length || 0);
 
     // Recent entries
     const historyDiv = document.getElementById('history-entries');
-    historyDiv.innerHTML = '';
+    if (!historyDiv) return;
+    historyDiv.textContent = '';
 
     if (appData.entries.length === 0) {
-        historyDiv.innerHTML = '<p style="color: #999; text-align: center;">No check-ins yet. Start tracking today! 🌟</p>';
+        const p = document.createElement('p');
+        p.style.color = '#999';
+        p.style.textAlign = 'center';
+        p.textContent = 'No check-ins yet. Start tracking today! 🌟';
+        historyDiv.appendChild(p);
         return;
     }
 
@@ -334,21 +357,55 @@ function updateHistory() {
     recent.forEach(entry => {
         const div = document.createElement('div');
         div.className = 'history-entry';
-        div.innerHTML = `
-            <div class="history-entry-date">${entry.date}</div>
-            <div class="history-entry-mood">${entry.emoji}</div>
-            ${entry.notes ? `<div class="history-entry-notes">${entry.notes}</div>` : ''}
-        `;
+
+        const dateDiv = document.createElement('div');
+        dateDiv.className = 'history-entry-date';
+        dateDiv.textContent = entry.date;
+
+        const moodDiv = document.createElement('div');
+        moodDiv.className = 'history-entry-mood';
+        moodDiv.textContent = entry.emoji || '';
+
+        div.appendChild(dateDiv);
+        div.appendChild(moodDiv);
+
+        if (entry.notes) {
+            const notesDiv = document.createElement('div');
+            notesDiv.className = 'history-entry-notes';
+            notesDiv.textContent = entry.notes;
+            div.appendChild(notesDiv);
+        }
+
         historyDiv.appendChild(div);
     });
 }
 
+// Export data as JSON file
+function exportData() {
+    try {
+        const dataStr = JSON.stringify(appData, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `mental-health-data-${todayIsoDate()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    } catch (err) {
+        console.error('Failed to export data:', err);
+        alert('Failed to export data. See console for details.');
+    }
+}
+
 // Clear all data
 function clearAllData() {
-    if (confirm('Are you sure? This will delete all your data permanently.')) {
-        appData = { entries: [], journalEntries: [] };
-        saveData();
-        updateHistory();
-        alert('Data cleared. Starting fresh! 🌱');
-    }
+    const confirmed = confirm('Are you sure? This will delete all your data permanently.');
+    if (!confirmed) return;
+
+    appData = { entries: [], journalEntries: [] };
+    saveData();
+    updateHistory();
+    alert('Data cleared. Starting fresh! 🌱');
 }
