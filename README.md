@@ -1,6 +1,6 @@
 # 🌟 Mental Health Check-up Tool
 
-A simple (vibe coded)yet meaningful application designed to help anyone (students, professionals, or anyone struggling) prioritize their mental well-being through daily mood tracking, journaling, and encouraging messages.
+A simple (vibe coded) yet meaningful application designed to help anyone (students, professionals, or anyone struggling) prioritize their mental well-being through daily mood tracking, journaling, and encouraging messages.
 
 ## 🎯 Purpose
 
